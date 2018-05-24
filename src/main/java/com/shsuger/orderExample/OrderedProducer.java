@@ -29,30 +29,35 @@ public class OrderedProducer {
 
         String[] tags = new String[] {"TagA", "TagB", "TagC", "TagD", "TagE"};
 
-        for (int i = 0; i < 10; i++) {
+        /** Message queue selector, through which we get target message queue to deliver message to.
+         *
+         *  RocketMQ通过轮询所有队列的方式来确定消息被发送到哪一个队列（负载均衡策略）
+         *  消息队列选择器，通过它我们获得目标消息队列来传递消息。也就是通过MessageQueueSelector中实现的算法来确定消息发送到哪一个队列上
+         *  RocketMQ默认提供了两种 MessageQueueSelector 实现  ：随机/hash
+         *
+         *  当然，我们可以根据自己的业务场景来 决定 消息以何种策略发送到消息队列中
+         *
+         *
+         *
+         */
+        MessageQueueSelector messageQueueSelector = new MessageQueueSelector() {
+            @Override
+            public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
+                Integer id = (Integer) arg;   //arg 传入的是orderid
+                int index = id % mqs.size();  //mqs.size默认为4
+                return mqs.get(index);
+            }
+        };
+
+        for (int i = 1000; i < 1100; i++) {
             int orderId = i % 10;  //
             //Create a message instance, specifying topic, tag and message body.
 
 
-            Message msg = new Message("OrderedTopic", tags[i % tags.length], "KEY" + i, ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
-
-            /** Message queue selector, through which we get target message queue to deliver message to.
-             *  消息队列选择器，通过它我们获得目标消息队列来传递消息。
-             *
-             */
-            SendResult sendResult = producer.send(msg, new MessageQueueSelector() {
-                                                                                        @Override
-                                                                                        public MessageQueue select(List<MessageQueue> mqs, Message msg, Object arg) {
+            Message msg = new Message("OrderedTopic", tags[i % tags.length], "KEY" + i, ("Hello RocketMQ HAHAHAHAH!!! !!!" + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
 
 
-                                                                                            Integer id = (Integer) arg;   //arg 传入的是orderid
-                                                                                            int index = id % mqs.size();  //mqs.size默认为4
-                                                                                            return mqs.get(index);
-                                                                                        }
-                                                                                    },
-                                                    orderId
-
-                                                );
+            SendResult sendResult = producer.send(msg, messageQueueSelector, orderId);
 
             System.out.printf("%s%n", sendResult);
         }
