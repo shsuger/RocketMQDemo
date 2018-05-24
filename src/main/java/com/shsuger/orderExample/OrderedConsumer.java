@@ -18,7 +18,7 @@ public class OrderedConsumer {
     public static void main(String[] args) throws Exception {
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("example_group_name");
 
-        consumer.setNamesrvAddr("localhost:9876");
+        consumer.setNamesrvAddr("10.2.82.10:9876");
 
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
 
@@ -42,7 +42,7 @@ public class OrderedConsumer {
 
                 System.out.printf(Thread.currentThread().getName() + " Receive New Messages: " + msgs + "%n");
 
-                this.consumeTimes.incrementAndGet();
+     /*           this.consumeTimes.incrementAndGet();
 
                 if ((this.consumeTimes.get() % 2) == 0) {
                     return ConsumeOrderlyStatus.SUCCESS;
@@ -55,6 +55,9 @@ public class OrderedConsumer {
                     context.setSuspendCurrentQueueTimeMillis(3000);
 
                     return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;
+                }*/
+                for (MessageExt msg: msgs){
+                    System.out.println("topic=" + msg.getTopic() + ",tags=" + msg.getTags() + ", content:" + new String(msg.getBody()));
                 }
                 return ConsumeOrderlyStatus.SUCCESS;
 
