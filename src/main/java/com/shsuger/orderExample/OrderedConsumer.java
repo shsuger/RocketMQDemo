@@ -31,8 +31,15 @@ public class OrderedConsumer {
          * one queue,one thread
          *
          */
+        consumer.registerMessageListener((MessageListenerOrderly) (msgs, context)->{
+            context.setAutoCommit(false);
+            System.out.printf(Thread.currentThread().getName() + " Receive New Messages: " + msgs + "%n");
+            msgs.stream().map(msg->"topic=" + msg.getTopic() + ",tags=" + msg.getTags() + ", content:" + new String(msg.getBody())).forEach(System.out::println);
+            return ConsumeOrderlyStatus.SUCCESS;});
 
-        consumer.registerMessageListener(new MessageListenerOrderly() {
+
+
+        /*consumer.registerMessageListener(new MessageListenerOrderly() {
 
             AtomicLong consumeTimes = new AtomicLong(0);
             @Override
@@ -42,7 +49,7 @@ public class OrderedConsumer {
 
                 System.out.printf(Thread.currentThread().getName() + " Receive New Messages: " + msgs + "%n");
 
-     /*           this.consumeTimes.incrementAndGet();
+     *//*           this.consumeTimes.incrementAndGet();
 
                 if ((this.consumeTimes.get() % 2) == 0) {
                     return ConsumeOrderlyStatus.SUCCESS;
@@ -55,14 +62,14 @@ public class OrderedConsumer {
                     context.setSuspendCurrentQueueTimeMillis(3000);
 
                     return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;
-                }*/
+                }*//*
                 for (MessageExt msg: msgs){
                     System.out.println("topic=" + msg.getTopic() + ",tags=" + msg.getTags() + ", content:" + new String(msg.getBody()));
                 }
                 return ConsumeOrderlyStatus.SUCCESS;
 
             }
-        });
+        });*/
 
         consumer.start();
 

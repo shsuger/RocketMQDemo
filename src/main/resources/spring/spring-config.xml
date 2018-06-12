@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <description>Spring公共配置</description>
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.shsuger"/>
+    <!-- 支持异步方法执行 -->
+    <task:annotation-driven />
+    <!-- 消息生产者实例 -->
+    <bean id="msgProducerClient" class="com.shsuger.mq.MQClient">
+        <constructor-arg index="0" ref="msgProducer"></constructor-arg>
+    </bean>
+    <bean id="msgProducer" class="org.apache.rocketmq.client.producer.DefaultMQProducer" init-method="start" destroy-method="shutdown" lazy-init="false">
+        <property name="producerGroup" value="shsugerMsgProducer" />
+        <property name="namesrvAddr" value="${rockmq.namesrvaddr}" />
+        <property name="instanceName" value="shsugerProducer" />
+    </bean>
+
+    <bean id="consumeSequence" class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
+        <property name="staticField" value="org.apache.rocketmq.common.consumer.ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET" />
+    </bean>
+    <!--消息订阅 -->
+    <bean id="msgConsumer" class="org.apache.rocketmq.client.consumer.DefaultMQPushConsumer" init-method="start" destroy-method="shutdown">
+        <property name="namesrvAddr" value="${rockmq.namesrvaddr}" />
+        <property name="consumerGroup" value="${rockmq.consumer.groupname}" />
+        <property name="instanceName" value="${rockmq.consumer.name}" />
+        <property name="consumeMessageBatchMaxSize" value="${rockmq.consumer.batch.maxsize}" />
+        <property name="pullInterval" value="${rockmq.consumer.pull.interval}" />
+        <property name="pullBatchSize" value="${rockmq.consumer.pull.batchsize}" />
+        <property name="messageListener" ref="msgListener" />
+        <property name="consumeFromWhere" ref="consumeSequence"></property>
+        <property name="subscription">
+            <map>
+                <entry key="${rockmq.consumer.subscribe.topic}" value="*" />
+            </map>
+        </property>
+    </bean>
+
+
+
+</beans>

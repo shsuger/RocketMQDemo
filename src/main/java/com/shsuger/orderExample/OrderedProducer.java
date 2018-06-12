@@ -57,7 +57,7 @@ public class OrderedProducer {
             Message msg = new Message("OrderedTopic", tags[i % tags.length], "KEY" + i, ("Hello RocketMQ HAHAHAHAH!!! !!!" + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
 
 
-            SendResult sendResult = producer.send(msg, messageQueueSelector, orderId);
+            SendResult sendResult = producer.send(msg, (mqs,msg1,arg)->{return mqs.get((Integer) arg % mqs.size());}, orderId);
 
             System.out.printf("%s%n", sendResult);
         }
